@@ -1,0 +1,71 @@
+assurance case MultiElevatorSystem_AssuranceCase:"The multi elevator system's Assurance case" 
+for multielevatorsystem::multielevatorsystem
+[
+
+assurance plan MultiElevator_AssurancePlan: "The multi elevator system's Assurance plan" 
+for multielevatorsystem::multielevatorsystem.impl 
+[
+	description "An assurance plan for the multi-elevator system configures how a multi elevator system is to be assured and this assurance plan is related to the assurance case for multi elevator system. It identifies the AADL model of multi elevator system that represents an implementation to be verified against the requirements of multi elevator system."
+	assure subsystem all
+]
+
+assurance task assurance_task1:"This assurance task is for checking function of elevator request system of multi elevator system"
+[
+	description "This assurance task is to assure that elevator system generates signal based on button pressed by user for requesting elevator of multi elevator system during it's multiple operational phases through testing"
+	category multielevatorsystem.working multielevatorsystem.nominal multielevatorsystem.nonfunctional multielevatorsystem.failed
+	quality.efficiency quality.accuracy
+]
+
+assurance task assurance_task2:"Assurance task for direction and position tracker of elevator" 
+[
+	description "This assurance task is to assure functioning or operability of direction and position tracker of elevator of multi elevator system"
+	category multielevatorsystem.working multielevatorsystem.nominal multielevatorsystem.nonfunctional multielevatorsystem.failed
+	quality.reliability quality.usability  quality.efficiency
+		
+] 
+
+assurance task assurance_task3: "This assurance task is for weighting system of multi elevator system" 
+[
+ 	description "This assurance task is to assure functioning or operability of weighting system of multi elevator system"
+	category multielevatorsystem.working multielevatorsystem.nominal multielevatorsystem.nonfunctional multielevatorsystem.failed
+	quality.accuracy quality.efficiency quality.faultTolerance
+]
+
+assurance task assurance_task4:"This assurance task is to testing latency in the multi elevator system"
+[
+	
+	description "This assurance task is to assure latency in functions of components of the multi elevator system"
+	category multielevatorsystem.working multielevatorsystem.nominal multielevatorsystem.nonfunctional multielevatorsystem.failed
+	quality.reliability quality.Latency
+]
+
+assurance task assurance_task5:"Assurance task to test and assure robustness of multi elevator system"
+[
+	description "This assurance task is to test and assure robustness of the multi elevator system"
+	category multielevatorsystem.working multielevatorsystem.nominal
+	quality.robustness quality.reliability
+]
+
+
+assurance task assurance_task6:"Assurance task for checking and assuring that the elevator does not operate when there is no request for it"
+[
+	description "This assurance task is to checking and assuring that the elevator does not operate when there is no request for it"
+	category multielevatorsystem.working multielevatorsystem.nominal multielevatorsystem.nonfunctional multielevatorsystem.failed
+	quality.efficiency quality.Availability
+]
+
+assurance task assurance_task7:"Assurance task for checking and assuring request signal processing by monitoring system and send correct signal for respective elevator to control system"
+[
+	description "This assurance task is to check and assure signal processing capability and accuracy of monitoring system of multi elevator system. These request signals monitoring system receive from control system of multi elevator system"
+	category multielevatorsystem.working multielevatorsystem.nominal multielevatorsystem.nonfunctional multielevatorsystem.failed
+	quality.accuracy quality.efficiency
+]
+
+assurance task assurance_task8:"assurance task for testing and assuring the functioning of two components(control system, monitoring system) of the multi elevator system"
+[
+	description "This assurance task is to check and assure operations and control flow ,data flow between two components of multi elevator system"
+	category multielevatorsystem.working multielevatorsystem.nominal multielevatorsystem.nonfunctional multielevatorsystem.failed
+	quality.safety quality.accuracy quality.efficiency
+]
+]
+
