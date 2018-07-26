@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="ASCII"?>
+<diagram:Diagram xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:diagram="http://osate.org/diagram" formatVersion="1">
+  <element id="0" manual="true">
+    <bo>
+      <seg>org.osate.ge.diagrams.instance</seg>
+      <seg>system_instance</seg>
+      <seg>multielevator::multi_elevator.impl</seg>
+    </bo>
+  </element>
+  <config>
+    <enabledAadlProperties/>
+    <context>
+      <seg>org.osate.ge.diagrams.instance</seg>
+      <seg>system_instance</seg>
+      <seg>multielevator::multi_elevator.impl</seg>
+    </context>
+  </config>
+</diagram:Diagram>
