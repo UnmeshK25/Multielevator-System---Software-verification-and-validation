@@ -1,0 +1,118 @@
+system requirements sysreq
+for MultiElevatorSystem ::MES.impl  
+[
+
+	val numberOfElevator: real = 3
+	val maxWeightAllowed : real = 100
+	val no_of_floors : real = 10
+	val no_of_ERSPlannel : real = 20
+	val powerSupplyPerDay : real = 5000
+	val activeHoursPerDay : real = 24
+	
+	
+	requirement R1_ERS_Request
+	[
+		description this "The ERS pannel should confirm the user what floor he request for as his destination"
+		rationale "The Ers pannel could confuse the user that he has pressed wrong button"
+		priority "high"
+		value predicate floor slection number
+		issues "Integrity Level 2"
+		requirement Category "Interface"	
+	]
+	
+	
+	
+	requirement R2_ERS_SIGNAL_TO_ELC
+	[
+		description this "Ers should send the correct signal to the elevator logic controler for the requested floor by the user"
+		rationale "wrong signal can divert the elevator direction"
+		mitigates "send the acknoledgement to ers for the signal resived by the ELC"
+		value predicate requested_floor_number
+		issues "Integrity Level 1"
+		requirement Category "integration"
+	]
+	
+	
+	requirement R3_Request_Queue
+	[
+		description this "The ELC should queue the request in a order"
+		rationale "This is necessary in order to process the request in a uniformal waiting time"
+		issues "Integrity Level 3"
+		mitigates "The first request should be processed first and last request should be processed last"
+		requirement Category "functionality"
+	]
+	
+	requirement R4_Request_Elevator
+	[
+		description this "The closest elevator to the floor should be responsible for the request for that floor"
+		rationale "This is necessary to utilise the resources efficiently and for uniformal waiting time"
+		issues "Integrity Level 3"
+		mitigates "The queue should be checked when the elevator is near the floor"
+		requirement Category "functionality"
+	]
+	
+	
+	requirement R5_Elevator_closed
+	[
+	description this "Once the door of elevator is closed, ELC should send the signal to elevator for direction in which it needs to move"
+	rationale "Elevator should not route on the basis of pre installed path, for uniformal waiting time"
+	issues "Integrity Level 2" 
+	requirement Category "functionality"
+	] 
+
+	requirement R6_ELC_STOP_SIGNAL_TO_ELEVATOR
+	[
+		description this "The ELC should check which floor the elevator is reaching and send the stop signal to elevator if there is a request for tha floor"
+		rationale "If one elevator gets stuck somwhere and other elevator reaches the floor then the nearest elevator should process the request" 
+        issues "Integrity Level 3"
+        mitigates " There is a request that the pre requested elevator could break then the request will go to deadlock"
+        requirement Category "safety"
+                   
+	]
+	
+   requirement R7_Elevator_Stop_Signal
+	[
+		description this "Elevator should Stop when the Elc Send signal to stop"
+		rationale "There can be emergency situation when elevator needs stop by ELC "
+		issues "Integrity Level 3"
+		requirement Category "Security"
+	]
+	
+	requirement R8_Elevator_opens [
+		description this "Elevator door should open as it stops"
+		rationale "There can be a risk that door does not open when the requested floor is arived"
+		compute performance : real
+		value predicate performance  <= maxPerformance
+		mitigates "The risk of system failure"
+		issues "Integrity Level 2"
+		requirement Category "safety"
+	]
+	
+	requirement R9_Elevator_Stops_when_no_request [
+		description this "Elevator should stop when there is no more request to processed"
+		rationale "Power wastage if the elevator keeps on moving without any request to processed"
+		issues "Integrity Level 4"
+		requirement Category "usability"
+	]
+	
+	
+	requirement R10_Alarm [
+		description this "Elevator should raise the alarm if there is poer failure an the elevator is in use"
+		rationale "Power loss will stop the elevator and there can be user in it"
+		issues "Integrity Level 1"
+		requirement Category "safety"
+	]
+	
+	requirement R11_fire_alarm [
+		description this "Elevator should stop on a nearest floor in case of fire and raise the alarm"
+		rationale "In case fire elevator shoul not allow any new user because this is dangerous to user life"
+		issues "Integrity Level 1"
+		requirement Category "safety"
+	]
+	
+	
+	]
+	
+	
+	
+	

@@ -1,0 +1,524 @@
+package MultiElevator
+
+public
+	with Base_Types,    
+     EMV2,  --error modeling properties
+     ErrorLibrary;  --predeclared error types in Error Modeling anned
+	 
+	system Multi_elevator
+		
+	end Multi_elevator;
+	system implementation Multi_elevator.impl
+		subcomponents
+			ELEVATOR :system elevator;
+			ELEVATOR_REQUEST_SYSTEM: system Elevator_request;
+			CONTROL_SYSTEM: system Control_system; -- Part of coordinator which sends control signals to each elevator  
+			MONITORING_SYSTEM: system Monitoring_system; -- Part of coordinator which runs the algorithm and processing requests from elevators using queue
+			POWER_UNIT: system power_unit;
+			ALARM_SYSTEM: system alarm;
+			
+			
+		connections
+			c1: port ELEVATOR_REQUEST_SYSTEM.Interrupt_signal -> CONTROL_SYSTEM.Interrupt_signal;
+			c2: port CONTROL_SYSTEM.Floor_number -> MONITORING_SYSTEM.Floor_number;
+			c3: port CONTROL_SYSTEM.direction -> MONITORING_SYSTEM.direction;
+			c4: bus access POWER_UNIT.Power_out -> ELEVATOR.Power_inp;
+			c5: port ELEVATOR.alarm_signal -> ALARM_SYSTEM.alarm_signal;
+			c6: port MONITORING_SYSTEM.elevator_number -> CONTROL_SYSTEM.Elevator_number;
+			c7: port CONTROL_SYSTEM.control_signal_to_elevator -> ELEVATOR.control_signal_from_control_system;
+			c8: port ELEVATOR.position_of_elevator -> CONTROL_SYSTEM.position_of_elevator;
+			c9: port ELEVATOR.direction_of_elevator -> CONTROL_SYSTEM.direction_of_elevator;
+			c10: port ELEVATOR.current_weight_of_elevator -> CONTROL_SYSTEM.current_weight_of_elevator;
+			c11: port CONTROL_SYSTEM.position_of_elevator_to_monitor-> MONITORING_SYSTEM.position_of_elevator_from_controller;
+			c12: port CONTROL_SYSTEM.direction_of_elevator_to_monitor-> MONITORING_SYSTEM.direction_of_elevator_from_controller;
+			c13: port CONTROL_SYSTEM.current_weight_of_elevator_to_monitor-> MONITORING_SYSTEM.current_weight_of_elevator_from_control_system;
+			
+		
+	end Multi_elevator.impl;
+	
+annex EMV2
+
+{**
+
+	error behavior FailStop
+	  use types MultiElevator;
+	  events fail: error event;
+	  states 
+	    working: initial state; 
+	    failed : state;
+	  transitions
+	    working -[fail]-> failed;
+	end behavior;
+**};
+
+system Elevator_request
+		features
+			Interrupt_signal : out event port; -- This interrupt signal contains the information like floor number the request comes from
+
+
+-- Error model ------------
+	annex EMV2 {**
+			use types ErrorLibrary; 
+			use behavior MultiElevator::FailStop;
+		
+			error propagations
+
+				Interrupt_signal  : out propagation  {SequenceTimingError,UndetectableValueError};
+							
+			flows
+
+				ef1 : error source Interrupt_signal{SequenceTimingError,UndetectableValueError};
+						
+			end propagations;
+					
+		**};
+
+	end Elevator_request;
+	
+	system implementation Elevator_request.impl
+
+	end Elevator_request.impl;
+	
+system Control_system
+		features
+
+			Elevator_number : in data port ;
+			Interrupt_signal : in event port;
+			Floor_number: out data port;
+			direction: out data port;
+			control_signal_to_elevator : out event port; -- this signal is for particular elevator based on elevator number receive from monitoring system
+			position_of_elevator : in data port;
+			direction_of_elevator : in data port;
+			position_of_elevator_to_monitor : out data port;
+			direction_of_elevator_to_monitor : out data port;
+			current_weight_of_elevator : in data port;
+			current_weight_of_elevator_to_monitor : out data port;
+			
+		annex resolute {**  
+				
+   			prove allComponentsConnected(this)		
+  **};
+  
+		annex agree {** 
+				
+    		const MAX_ELEVATOR_NUMBER : int = 3; 
+    		assume "Elevator number is positive" : Elevator_number >= 1;     
+    		assume "reasonable Elevator number" : Elevator_number < 4;      		
+    		assume "current_weight_of_elevator is positive" : current_weight_of_elevator >= 1;  
+    		assume "position_of_elevator is positive" : position_of_elevator >= 1;   
+   
+    		guarantee "Floor_number is between 1 and 20 (both included)": Floor_number <= 20 and Floor_number >= 1;
+    		guarantee "current_weight_of_elevator_to_monitor is positive": current_weight_of_elevator_to_monitor > 0;
+  **};		
+	annex EMV2 {**
+			use types ErrorLibrary; 
+			use behavior MultiElevator::FailStop;
+		
+			error propagations
+
+				Interrupt_signal  : in propagation  {SequenceTimingError,UndetectableValueError};
+				Floor_number : out propagation {ItemValueError};
+				direction : out propagation {SequenceTimingError};
+				control_signal_to_elevator :out propagation {SequenceTimingError};
+				Elevator_number  : in propagation  {ItemValueError};
+				position_of_elevator : in propagation  {OutOfRange};
+				direction_of_elevator : in propagation  {ServiceTimingError};
+				position_of_elevator_to_monitor : out propagation {OutOfRange};
+				direction_of_elevator_to_monitor : out propagation {ServiceTimingError};
+				current_weight_of_elevator : in propagation  {ValueRelatedError};
+				current_weight_of_elevator_to_monitor : out propagation {ValueRelatedError};
+				
+			flows
+
+				ef1 : error path Interrupt_signal{SequenceTimingError,UndetectableValueError}->Floor_number {ItemValueError};
+				ef2 : error path Interrupt_signal{SequenceTimingError}->direction {SequenceTimingError};
+				ef3 : error path position_of_elevator{OutOfRange}->position_of_elevator_to_monitor {OutOfRange};
+				ef4 : error path direction_of_elevator{ServiceTimingError}->direction_of_elevator_to_monitor {ServiceTimingError};
+				ef5 : error path current_weight_of_elevator{ValueRelatedError}->current_weight_of_elevator_to_monitor {ValueRelatedError};
+				
+			
+				
+			end propagations;
+			
+			component error behavior
+			events
+				BadRead    	: error event;
+				RecoverEvent: recover event;
+				
+			transitions
+				t0 : working -[Interrupt_signal{SequenceTimingError}]->   Failed;
+				t1 : working -[BadRead]-> Failed;
+				t2 : Failed  -[RecoverEvent]-> working;	
+			end component;
+		**};
+	end Control_system;
+	
+	system implementation Control_system.impl
+
+	end Control_system.impl;
+	
+system elevator
+
+		features
+
+			Power_inp : requires bus access;
+			alarm_signal: out event port;
+			control_signal_from_control_system : in event port;
+			floor_request_interrupt_signal : out event port;
+			position_of_elevator : out data port;
+			direction_of_elevator : out data port;
+			current_weight_of_elevator :out data port;
+			
+		annex resolute {**  
+				
+   			prove allComponentsConnected(this)		
+  **};
+		
+		annex agree {**  
+   
+    		guarantee "current_weight_of_elevator is positive": current_weight_of_elevator > 0;
+  **};
+			
+		annex EMV2 {**
+			use types ErrorLibrary; 
+			use behavior MultiElevator::FailStop;
+		
+			error propagations
+
+				alarm_signal  : out propagation  {SequenceTimingError};
+				control_signal_from_control_system : in propagation {SequenceTimingError};
+				floor_request_interrupt_signal :out propagation {SequenceTimingError};
+				position_of_elevator : out propagation {OutOfRange};
+				direction_of_elevator : out propagation {ServiceTimingError};
+				current_weight_of_elevator : out propagation {ValueRelatedError};
+				
+				
+			flows
+
+				ef1 : error source alarm_signal{SequenceTimingError};
+				ef2 : error sink control_signal_from_control_system{SequenceTimingError};
+
+					
+			end propagations;
+			
+			component error behavior
+			events
+				BadRead    	: error event;
+				RecoverEvent: recover event;
+				
+			transitions
+				t0 : working -[alarm_signal{SequenceTimingError}]->   Failed;
+				t1 : working -[BadRead]-> Failed;
+				t2 : Failed  -[RecoverEvent]-> working;	
+			end component;
+		**};
+
+	end elevator;
+	
+	system implementation elevator.impl
+		subcomponents
+			ELEVATOR_CONTROLLER: system controller;
+			ELEVATOR_DOORS: system doors;
+			ELEVATOR_BUTTON_PAD: system button_pad;
+			ELEVATOR_POSITION_and_DIRECTION_TRACKER: system position_direction_tracker;
+			ELEVATOR_WEIGHING_SYSTEM: system weighing_system;
+			
+		connections
+			el_c1: port control_signal_from_control_system -> ELEVATOR_CONTROLLER.control_signal;
+			el_c2: port ELEVATOR_BUTTON_PAD.Floor_request_interrupt_signal -> floor_request_interrupt_signal;
+			el_c3: port ELEVATOR_POSITION_and_DIRECTION_TRACKER.position_of_elevator -> position_of_elevator;
+			el_c4: port ELEVATOR_POSITION_and_DIRECTION_TRACKER.direction_of_elevator -> direction_of_elevator;
+			el_c5 : port ELEVATOR_WEIGHING_SYSTEM.current_weight_of_elevator -> current_weight_of_elevator;
+	end elevator.impl;
+	
+system controller
+		features
+
+			control_signal : in event port;
+			annex agree {** 
+				
+    		
+  **};
+			annex EMV2 {**
+			use types ErrorLibrary; 
+			use behavior MultiElevator::FailStop;
+		
+			error propagations
+
+				control_signal : in propagation  {SequenceTimingError};
+							
+			flows
+
+				ef1 : error sink control_signal {SequenceTimingError};
+						
+			end propagations;
+					
+		**};
+	end controller;
+	
+	system implementation controller.impl
+
+	end controller.impl;
+	
+	system doors
+		features
+
+			door_status : out event port;
+annex agree {** 
+				
+    		
+  **};
+	end doors;
+	
+	system implementation doors.impl
+
+	end doors.impl;
+	
+	
+	system button_pad 
+		features
+
+			Floor_request_interrupt_signal : out event port;
+			annex agree {** 
+				
+    		
+  **};
+		annex EMV2 {**
+			use types ErrorLibrary; 
+			use behavior MultiElevator::FailStop;
+		
+			error propagations
+
+				Floor_request_interrupt_signal  : out propagation  {SequenceTimingError};
+							
+			flows
+
+				ef1 : error source Floor_request_interrupt_signal{SequenceTimingError};
+						
+			end propagations;
+					
+		**};
+	end button_pad;
+	
+	system implementation button_pad.impl
+
+	end button_pad.impl;
+	
+	system position_direction_tracker 
+		features
+
+			position_of_elevator : out data port;
+			direction_of_elevator : out data port;
+
+		annex agree {**  
+   
+    		guarantee "position_of_elevator is positive": position_of_elevator > 0;
+  **};
+
+    annex EMV2 {**
+			use types ErrorLibrary; 
+			use behavior MultiElevator::FailStop;
+		
+			error propagations
+
+				position_of_elevator  : out propagation  {OutOfRange};
+				direction_of_elevator  : out propagation  {ServiceTimingError};
+							
+			flows
+
+				ef1 : error source position_of_elevator{OutOfRange};
+				ef2 : error source direction_of_elevator{ServiceTimingError};
+						
+			end propagations;
+					
+		**};
+	end position_direction_tracker;
+	
+	system implementation position_direction_tracker.impl
+
+	end position_direction_tracker.impl;
+	
+	system weighing_system
+		features
+
+			current_weight_of_elevator  : out data port;
+
+	annex agree {**  
+   
+    		guarantee "current_weight_of_elevator is positive": current_weight_of_elevator > 0;
+  **};
+  
+		annex EMV2 {**
+			use types ErrorLibrary; 
+			use behavior MultiElevator::FailStop;
+		
+			error propagations
+
+				current_weight_of_elevator  : out propagation  {ValueRelatedError};
+							
+			flows
+
+				ef1 : error source current_weight_of_elevator{ValueRelatedError};
+						
+			end propagations;
+					
+		**};
+	end weighing_system;
+	
+	system implementation weighing_system.impl
+
+	end weighing_system.impl;
+	
+	system Monitoring_system
+		features
+
+			Floor_number: in data port;
+			direction: in data port;
+			elevator_number: out data port;
+			position_of_elevator_from_controller : in data port;
+			direction_of_elevator_from_controller : in data port;
+			current_weight_of_elevator_from_control_system : in data port;
+			
+		annex resolute {**  
+				
+   			prove allComponentsConnected(this)		
+  **};
+  
+		annex agree {** 
+				
+    		const MAX_ELEVATOR_NUMBER : int = 3; 
+    		assume "Floor_number is positive" : Floor_number >= 1;     
+    		assume "reasonable Floor_number" : Floor_number < 21;      		
+    		assume "current_weight_of_elevator_from_control_system is positive" : current_weight_of_elevator_from_control_system >= 1;  
+    		assume "position_of_elevator_from_controller is positive" : position_of_elevator_from_controller >= 1;     
+    		guarantee "elevator_number is between 1 and 3 (both included)": elevator_number <= 3 and elevator_number >= 1;
+    		
+  **};
+  
+  	
+		annex EMV2 {**
+			use types ErrorLibrary; 
+			use behavior MultiElevator::FailStop;
+		
+			error propagations
+
+				elevator_number  : out propagation  {ItemValueError};
+				direction : in propagation {SequenceTimingError};
+				Floor_number : in propagation {ItemValueError};
+				position_of_elevator_from_controller : in propagation {OutOfRange};
+				direction_of_elevator_from_controller : in propagation {ServiceTimingError};
+				current_weight_of_elevator_from_control_system : in propagation {ValueRelatedError};
+					
+			flows
+
+				ef1 : error source elevator_number{ItemValueError};
+				ef2 : error sink direction{SequenceTimingError};
+				ef3 : error sink Floor_number{ItemValueError};
+				ef4 : error sink position_of_elevator_from_controller{OutOfRange};
+				ef5 : error sink direction_of_elevator_from_controller{ServiceTimingError};
+				ef6 : error sink current_weight_of_elevator_from_control_system {ValueRelatedError};
+					
+			end propagations;
+			
+			component error behavior
+			events
+				BadRead    	: error event;
+				RecoverEvent: recover event;
+				
+			transitions
+				t0 : working -[elevator_number{ItemValueError}]->   Failed;
+				t1 : working -[BadRead]-> Failed;
+				t2 : Failed  -[RecoverEvent]-> working;	
+			end component;
+		**};
+	end Monitoring_system;
+	
+	system implementation Monitoring_system.impl
+		subcomponents
+			ALGORITHM: system algorithm;
+			
+		connections
+		MS_c1: port Floor_number -> ALGORITHM.Floor_number_from_request;
+		MS_c2: port direction -> ALGORITHM.direction_from_request;
+		MC_c3: port ALGORITHM.elevator_number -> elevator_number;
+		MC_c4: port position_of_elevator_from_controller -> ALGORITHM.position_of_elevator_from_Monitoring_system;
+		MC_c5: port direction_of_elevator_from_controller -> ALGORITHM.direction_of_elevator_from_Monitoring_system;
+		MC_c6: port current_weight_of_elevator_from_control_system -> ALGORITHM.current_weight_of_elevator_from_monitor_system;
+		
+			
+	end Monitoring_system.impl;
+  		
+	system algorithm
+		features
+			Floor_number_from_request: in data port;
+			direction_from_request: in data port;
+			elevator_number : out data port;
+			position_of_elevator_from_Monitoring_system : in data port;
+			direction_of_elevator_from_Monitoring_system : in data port;
+			current_weight_of_elevator_from_monitor_system : in data port;
+
+annex resolute {**  
+				
+   			prove allComponentsConnected(this)		
+  **};
+  
+annex agree {** 
+				
+    		const MAX_ELEVATOR_NUMBER : int = 3; 
+    		assume "Floor_number is positive" : Floor_number_from_request >= 1;     
+    		assume "reasonable Floor_number" : Floor_number_from_request < 21;      		
+    		assume "current_weight_of_elevator_from_monitor_system is positive" : current_weight_of_elevator_from_monitor_system >= 1;  
+    		assume "position_of_elevator_from_Monitoring_system is positive" : position_of_elevator_from_Monitoring_system >= 1;   
+   
+    		guarantee "elevator_number is between 1 and 3 (both included)": elevator_number <= 3 and elevator_number >= 1;
+    		
+  **};
+  
+	end algorithm;
+	
+	system implementation algorithm.impl
+
+	end algorithm.impl;
+	
+	system power_unit
+		features
+
+			Power_out : provides bus access; -- This interrupt signal contains the information like floor number the request comes from
+annex agree {** 
+				
+    		
+  **};
+	end power_unit;
+	
+	system implementation power_unit.impl
+
+	end power_unit.impl;
+	
+	system alarm
+		features
+
+		alarm_signal: in event port;	 -- This interrupt signal contains the information like floor number the request comes from
+		annex EMV2 {**
+			use types ErrorLibrary; 
+			use behavior MultiElevator::FailStop;
+		
+			error propagations
+
+				alarm_signal  : in propagation  {SequenceTimingError};
+							
+			flows
+				ef1 : error sink alarm_signal{SequenceTimingError};
+						
+			end propagations;
+					
+		**};
+		annex agree {** 
+				
+    		
+  **};
+	end alarm;
+	
+	system implementation alarm.impl
+	end alarm.impl;
+	
+end MultiElevator;
