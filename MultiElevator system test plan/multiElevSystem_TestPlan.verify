@@ -1,0 +1,125 @@
+verification plan MESReqVerificationTestPlan  for mesreqs[
+	
+	
+	claim elevatorFunctionality_Test:" The elevator should move in correct direction of the request and stop on the corrcect floor" 
+		
+		[
+			rationale "This plan verifies the elevator functionality, its move direction and stop floor"
+			activities
+			ElevatorUnit_Test1:"elevator functionality move requirement of multi elevator system":
+			MESVerPlanMethods.elevatorFunctionalityMove(move_directtion)
+			
+			ElevatorUnit_Test2:"elevator functionality stop requirement of multi elevator system":
+			MESVerPlanMethods.elevatorFunctionalityStop(pressure)
+			
+			ElevatorUnit_Test3:"elevator functionality overweight requirement of multi elevator system":
+			MESVerPlanMethods.WeighingInput(pressure)		
+			assert all[ElevatorUnit_Test1, ElevatorUnit_Test2, ElevatorUnit_Test3]			
+		]
+		
+		
+		claim MESpowerBackup_Test:" power requirements of the multi elevator system " 
+		[
+			rationale "This plan is defined for verifying power requirement for multi elevator system"
+			activities
+			Power_Test1:"power system should never fail":
+			MESVerPlanMethods.powerBackup(power)
+			
+			Power_Test2:"power should be given to all systems control systems, monitor systems, elevator, request system":
+			MESVerPlanMethods.poweroutput(power)
+			
+			Power_Test3:"power requirements of the multi elevator system":
+			MESVerPlanMethods.powerInput(power)			
+			assert all[Power_Test1, Power_Test2, Power_Test3]
+		]
+
+		claim monitorFunctionality_Test:"monitor functionality requirements"
+			[
+			rationale "This plan is defined for the verification of operations of monitor system in multi elevator system"
+			activities
+			monitor_Test1:"The monitor system should correctly calculate the elevator which needs to process the request":
+			MESVerPlanMethods.computationAccuracy(signal)
+				
+				
+				
+			monitor_Test2:"Monitor system shoould get input in a correct range":
+			MESVerPlanMethods.inputIntegrity(signal)
+				 
+			   
+			   
+			monitor_Test3:"monitor system should give the output to control system":
+			MESVerPlanMethods.OutputIntegrity(signal)
+				
+				
+			assert all[monitor_Test1, monitor_Test2, monitor_Test3]
+		]
+	
+	
+		claim controlSystemFunctionality_Test:"control system functionality requirements test"
+		[
+			rationale "This plan is defined for the verification of control system functionality in multi elevator system"
+			activities
+			controlSystem_Test1:"control system should coordinate with each component and mentain the correct data structure on the basis of information recieved by each component":
+			MESVerPlanMethods.controlSystemCoordination(signal)
+						
+			controlSystem_Test2:"control system should first test the integrity of input all values should be in given range":
+			MESVerPlanMethods.controlSystemInput(signal)
+						
+			controlSystem_Test3:"control system should first test the integrity of output all values should be in given range":
+			MESVerPlanMethods.controlSystemOutPut(signal)
+						
+			assert all[controlSystem_Test1, controlSystem_Test2, controlSystem_Test3]
+		]
+		
+		
+		claim controlUnitFunctionality_Test:"control unit functionality requirements test"
+		[
+			rationale "This plan is defined for the verification of control unit functionality of elevator unit in multi elevator system"
+			activities
+			controlUnit_Test1:"control unit should coordinate with coordinate between elevator unit and control system":
+			MESVerPlanMethods.controlUnitCoordination(signal)
+						
+			controlUnit_Test2:"control Unit should give apropriate location of elevator to the control system":
+			MESVerPlanMethods.controlUnitOutput(signal)
+						
+			controlUnit_Test3:"control unit should get correct input from the control system":
+			MESVerPlanMethods.controlUnitInput(signal)
+						
+			assert all[controlUnit_Test1, controlUnit_Test2, controlUnit_Test3]
+		]
+		
+		
+		
+		
+	
+	claim Maintainability_R2:" maintenance cost requirements of the multi elevator system " 
+		
+	[
+			rationale "This plan is defined for the verification of the system's maintenance cost"
+			activities
+			maintenance_Test1:"Test of maintenance cost of multi elevator system":
+			MESVerPlanMethods.maintenancecost(system_maintenance)
+			
+			maintenance_Test2:"Test of maintenance cost of controller":
+			MESVerPlanMethods.maintenancecost(controller_maintenance)
+			
+			assert all[maintenance_Test1, maintenance_Test2]
+	]
+
+	claim Reliability_R3:"The system is reliable if it's performing as expected and gives correct output "[
+		rationale "This plan is defined for the verification of the system reliability"
+		activities
+		Reliability_Test1:"Test of controller's processing of input signals from elevator request system":
+		MESVerPlanMethods.request_system_reliablity(request_system_reliablity)	
+						
+			Reliability_Test2:"Second test of controller's processing of input signals from control unit" :
+			MESVerPlanMethods.controlUnit_system_reliablity(controlUnit_system_reliablity)
+		    
+						
+			assert all[Reliability_Test1, Reliability_Test2]
+			]
+		
+
+
+	
+]

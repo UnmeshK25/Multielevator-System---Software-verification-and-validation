@@ -1,0 +1,92 @@
+verification methods MultiElevVerPlanMethods : "Verification Plan Methods for mesreqs" [
+	
+	
+	method elevatorFunctionalityMove (a: real)boolean : "elevator functionality move requirement of multi elevator system" [
+		java MESTestverify.MESTestverify.elevatorFunctionalityMove(double a)
+		description "elevator should move in the direction in which control unit indicates"
+	]
+	
+	method elevatorFunctionalityStop (a: real)boolean : "elevator functionality stop requirement of multi elevator system" [
+		java MESTestverify.MESTestverify.elevatorFunctionalityStop(double a)
+		description "elevator should stop in the direction in which control unit indicates"
+	]
+	
+	method elevatorFunctionalityOverWeight (a: real)boolean : "elevator functionality overweight requirement of multi elevator system" [
+		java MESTestverify.MESTestverify.WeighingInput(double a)
+		description "elevator should not allow more people when overweight"
+	]
+	// end of req1
+	
+	method powerBackup (a: real)boolean : "power requirements of the multi elevator system" [
+		java MESTestverify.MESTestverify.powerBackup(double a)
+		description "power system should never fail"
+	]
+	
+	method poweroutput (a: real)boolean : "power requirements of the multi elevator system" [
+		java MESTestverify.MESTestverify.poweroutput(double a)
+		description "power should be given to all systems control systems, monitor systems, elevator, request system"
+	]
+	
+	method powerInput (a: real)boolean : "power requirements of the multi elevator system" [
+		java MESTestverify.MESTestverify.powerInput(double a)
+		description "power system should be connected to electricity and should be always on"
+	]
+	
+	
+	// end of req2
+	
+	
+	method monitorFunctionality (a: real)boolean : "monitor functionality requirements" [
+		java MESTestverify.MESTestverify.computationAccuracy(double a)
+		description "The monitor system should correctly calculate the elevator which needs to process the request"
+	]
+	
+	method monitorInput (a: real)boolean : "monitor input test requirements" [
+		java MESTestverify.MESTestverify.inputIntegrity(double a)
+		description "Monitor system shoould get input in a correct range"
+	]
+	
+	method monitorOutput (a: real)boolean : "monitor output requirement" [
+		java MESTestverify.MESTestverify.OutputIntegrity(double a)
+		description "monitor system should give the output to control system"
+	]
+	
+	
+	// end of req3
+	
+	method controlSystemFunctionality (a: real)boolean : "control system should coordinate correctly" [
+		java MESTestverify.MESTestverify.controlSystemCoordination(double a)
+		description "control system should coordinate with each component and mentain the correct data structure on the basis of information recieved by each component"
+	]
+	
+	method controlSystemInput (a: real)boolean : "control system input inegrity" [
+		java MESTestverify.MESTestverify.inputIntegrity(double a)
+		description "control system should first test the integrity of input all values should be in given range"
+	]
+	
+	method controlSystemOutPut (a: real)boolean : "control system output inegrity" [
+		java MESTestverify.MESTestverify.outputIntegrity(double a)
+		description "control system should first test the integrity of output all values should be in given range"
+	]
+	
+	// end of req4
+	
+	
+	method  controlUnitFunctionality(a: real)boolean : "control unit fuctionality of wheel break system" [
+		java MESTestVerify.MESTestVerify.controlUnitCoordination(double a)
+		description "control unit should coordinate with coordinate between elevator unit and control system"
+	]
+	
+	method controlUnitOutput (a: real)boolean : "control unit output to control system" [
+		java MESTestVerify.MESTestVerify.controlUnitOutput(double a)
+		description "control Unit should give apropriate location of elevator to the control system"
+	]
+	
+	method controlUnitInput (a: real)boolean : "control unit input from control system" [
+		java MESTestVerify.MESTestVerify.controlUnitInput(double a)
+		description "control unit should get correct input from the control system"
+	]
+	
+	
+
+]
